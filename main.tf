@@ -1,3 +1,4 @@
+# KMS resources
 resource "random_id" "keyring" {
   byte_length = 4
 }
@@ -19,6 +20,7 @@ resource "google_kms_crypto_key" "key" {
   }
 }
 
+# Certificate resources
 resource "tls_private_key" "root_ca_key" {
 
   algorithm = "RSA"
@@ -83,6 +85,7 @@ resource "tls_locally_signed_cert" "cert" {
   allowed_uses = ["server_auth"]
 }
 
+# Encrypting the key with KMS
 resource "google_kms_secret_ciphertext" "tls-key-encrypted" {
   crypto_key = google_kms_crypto_key.key.self_link
   plaintext  = tls_private_key.private_key.private_key_pem
@@ -100,6 +103,15 @@ resource "google_storage_bucket_object" "private-key" {
   }
 }
 
+# Creating GCS Bucket
+resource "google_storage_bucket" "tls" {
+  project       = var.project_id
+  name          = var.tls_bucket
+  location      = "EU"
+  force_destroy = true
+}
+
+# Storing key and certificate material in a GCS Bucket
 resource "google_storage_bucket_object" "server-cert" {
   name    = "${var.tls_cert_name}.crt"
   content = tls_locally_signed_cert.cert.cert_pem
@@ -113,7 +125,7 @@ resource "google_storage_bucket_object" "ca-cert" {
   bucket  = google_storage_bucket.tls.name
 }
 
-
+# Assign IAM permissions to access GCS Bucket
 resource "google_storage_bucket_iam_member" "member" {
   for_each = toset(var.service_account_storage_bucket_iam_roles)
   bucket   = var.tls_bucket
@@ -121,6 +133,14 @@ resource "google_storage_bucket_iam_member" "member" {
   member   = "serviceAccount:${var.service_account_email}"
 }
 
+resource "google_storage_bucket_iam_member" "tls-bucket-iam" {
+
+  bucket = google_storage_bucket.tls.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${var.service_account_email}"
+}
+
+# Assign IAM permissions to access KMS
 resource "google_kms_crypto_key_iam_member" "ck-iam" {
   crypto_key_id = google_kms_crypto_key.key.self_link
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
@@ -134,16 +154,3 @@ resource "google_kms_crypto_key_iam_member" "tls-ck-iam" {
   member        = "serviceAccount:${var.service_account_email}"
 }
 
-resource "google_storage_bucket_iam_member" "tls-bucket-iam" {
-
-  bucket = google_storage_bucket.tls.name
-  role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${var.service_account_email}"
-}
-
-resource "google_storage_bucket" "tls" {
-  project       = var.project_id
-  name          = var.tls_bucket
-  location      = "EU"
-  force_destroy = true
-}

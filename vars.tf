@@ -1,3 +1,4 @@
+# Project variables
 variable "project_id" {
   type        = string
   description = "ID of the project in which to create resources and add IAM bindings."
@@ -9,16 +10,12 @@ variable "region" {
   description = "Region in which to create resources."
 }
 
+# KMS variables
 variable "kms_keyring" {
   type        = string
   default     = "tls"
   description = "Name of the Cloud KMS KeyRing for asset encryption. Terraform will create this keyring."
 
-}
-
-variable "tls_cert_name" {
-  type        = string
-  description = "Name for the self-signed TLS certificate."
 }
 
 variable "kms_protection_level" {
@@ -28,9 +25,22 @@ variable "kms_protection_level" {
   description = "The protection level to use for the KMS crypto key."
 }
 
+# GCS Bucket resources
+variable "bucket_location" {
+  type        = string
+  default     = "EU"
+  description = "Geograpgical region in which the GCS Bucket should reside."
+}
+
 variable "tls_bucket" {
   type        = string
   description = "GCS Bucket to store resulting certificates and keys. Terraform will create this Bucket."
+}
+
+# TLS variables 
+variable "tls_cert_name" {
+  type        = string
+  description = "Name for the self-signed TLS certificate."
 }
 
 variable "tls_ou" {
@@ -79,6 +89,7 @@ variable "tls_cn" {
   default     = "certificate.example.net"
 }
 
+# IAM variables
 variable "service_account_email" {
   type = string
 }
@@ -93,4 +104,3 @@ variable "service_account_storage_bucket_iam_roles" {
 
   description = "List of IAM roles for the service account to have on the storage bucket."
 }
-
