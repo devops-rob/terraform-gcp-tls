@@ -24,7 +24,7 @@ resource "google_compute_address" "test" {
 }
 
 module "tls_cert" {
-  source = "../"
+  source = "devops-rob/tls/gcp"
 
   project_id            = var.project_id
   region                = var.project_region
