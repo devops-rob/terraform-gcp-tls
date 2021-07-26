@@ -107,7 +107,7 @@ resource "google_storage_bucket_object" "private-key" {
 resource "google_storage_bucket" "tls" {
   project       = var.project_id
   name          = var.tls_bucket
-  location      = "EU"
+  location      = var.bucket_location
   force_destroy = true
 }
 
