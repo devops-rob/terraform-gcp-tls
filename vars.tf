@@ -80,8 +80,9 @@ variable "tls_dns_names" {
 }
 
 variable "ip_addresses" {
-  type    = list(string)
-  default = []
+  type        = list(string)
+  default     = []
+  description = "List of IP addresses to add to the certificate."
 }
 
 variable "tls_cn" {
@@ -91,7 +92,8 @@ variable "tls_cn" {
 
 # IAM variables
 variable "service_account_email" {
-  type = string
+  type        = string
+  description = "Service account email to assign IAM permissions to for access to GCS Bucket and KMS."
 }
 
 variable "service_account_storage_bucket_iam_roles" {
